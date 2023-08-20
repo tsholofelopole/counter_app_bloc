@@ -2,10 +2,37 @@ import 'package:counter_app_bloc/counter/bloc.dart';
 import 'package:counter_app_bloc/counter/event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quick_actions/quick_actions.dart';
 
 import '../counter/state.dart';
 
 class HomeScreen extends StatelessWidget {
+  QuickActions quickActions = const QuickActions();
+
+  late final CounterBloc _counterBloc;
+
+  HomeScreen({CounterBloc? counterBloc}) {
+    _counterBloc = counterBloc ?? CounterBloc();
+
+    // _counterBloc
+    //     .add(CounterIncrementEvent());
+
+    setupQuickActions();
+  }
+
+  setupQuickActions() {
+    quickActions.initialize((shortcutType) {
+      if (shortcutType == 'actionopen') {
+        print("Open button is pressed");
+      } else if (shortcutType == "actionupload") {
+        print("Upload button is pressed.");
+      } else if (shortcutType == "actioncreate") {
+        print("Create Button is pressed");
+      }
+      // More handling code...
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     print('Whole \'HomeScreen\' built');
@@ -20,6 +47,30 @@ class HomeScreen extends StatelessWidget {
             Center(
               child: BlocConsumer<CounterBloc, CounterState>(
                 listener: (context, state) {
+                  if (state is CounterInitial) {
+                    Container(
+                        alignment: Alignment.center,
+                        child: Column(children: [
+                          ElevatedButton(
+                              onPressed: () {
+                                quickActions.setShortcutItems(<ShortcutItem>[
+                                  ShortcutItem(
+                                      type: 'actionopen',
+                                      localizedTitle: 'Open My Files',
+                                      icon: 'folder'),
+                                  ShortcutItem(
+                                      type: 'actionupload',
+                                      localizedTitle: 'Upload New File',
+                                      icon: 'folder'),
+                                  ShortcutItem(
+                                      type: 'actioncreate',
+                                      localizedTitle: 'Create New File',
+                                      icon: 'folder')
+                                ]);
+                              },
+                              child: Text("Add Shortcut"))
+                        ]));
+                  }
                   if (state is IncrementState) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -38,9 +89,27 @@ class HomeScreen extends StatelessWidget {
                   }
                 },
                 builder: (context, state) {
-                  return Text(
-                    'Counter value: ${state.counter}',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  return CallbackShortcuts(
+                    bindings: <ShortcutActivator, VoidCallback>{
+                      //activator: () {}
+                      //ShortcutActivator activator = CharacterActivator('+');
+                    },
+                    child: Focus(
+                      child: Column(
+                        children: [
+                          Text(String.fromEnvironment('SECRET_KEY'),
+                              style: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                              )), //String.fromEnvironment('SECRET_KEY')),
+                          Text(
+                            'Counter value: ${state.counter}',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
                   );
                 },
               ),

@@ -29,3 +29,7 @@ class IncrementState extends CounterState {
 class DecrementState extends CounterState {
   DecrementState(int counter) : super(counter);
 }
+
+class DefaultState extends CounterState {
+  DefaultState() : super(0);
+}
